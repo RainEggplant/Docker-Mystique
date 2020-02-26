@@ -33,13 +33,15 @@ jobs:
           echo ::set-env name=SOURCE_UPDATE_TIME::$update_time
 
       - name: Log in to DockerHub
+        if: env.MYSTIQUE_UPDATE_TIME < env.SOURCE_UPDATE_TIME
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Update Dockerfile and build
-        if: env.MYSTIQUE_UPDATE_TIME < env.SOURCE_UPDATE_TIME
+        if: success()
         run: |
           sed -i 's,%SOURCE_DOCKER_IMAGE%,${{ secrets.SOURCE_DOCKER_IMAGE }},g' Dockerfile
           docker build -t ${{ secrets.MYSTIQUE_DOCKER_IMAGE }}:latest .
 
       - name: push image to DockerHub
+        if: success()
         run: docker push ${{ secrets.MYSTIQUE_DOCKER_IMAGE }}:latest
