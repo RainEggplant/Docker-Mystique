@@ -19,18 +19,18 @@ jobs:
         run: |
           update_time=$(curl -X GET 'https://hub.docker.com/v2/repositories/${{ secrets.MYSTIQUE_DOCKER_IMAGE }}/tags/latest' | jq -r '.last_updated')
           if [ $update_time == null ]; then
-            echo ::set-env name=MYSTIQUE_UPDATE_TIME::0
+            echo "MYSTIQUE_UPDATE_TIME=0" >> $GITHUB_ENV
           else
             update_time=$(date -d $update_time +%Y%m%d%H%M%S)
             echo ::add-mask::$update_time
-            echo ::set-env name=MYSTIQUE_UPDATE_TIME::$update_time  
+            echo "MYSTIQUE_UPDATE_TIME=$update_time" >> $GITHUB_ENV
           fi
 
       - name: Retrieve update date of source image
         run: |
           update_time=$(date -d $(curl -X GET https://hub.docker.com/v2/repositories/${{ secrets.SOURCE_DOCKER_IMAGE }}/tags/latest | jq -r '.last_updated') +%Y%m%d%H%M%S)
           echo ::add-mask::$update_time
-          echo ::set-env name=SOURCE_UPDATE_TIME::$update_time
+          echo "SOURCE_UPDATE_TIME=$update_time" >> $GITHUB_ENV
 
       - name: Log in to DockerHub
         if: env.MYSTIQUE_UPDATE_TIME < env.SOURCE_UPDATE_TIME
